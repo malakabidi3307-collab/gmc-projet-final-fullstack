@@ -1,0 +1,43 @@
+
+:root {
+  --background: #f5f7fa;
+  --foreground: #1b2433;
+  --card: #ffffff;
+  --card-foreground: #1b2433;
+  --popover: #ffffff;
+  --popover-foreground: #1b2433;
+  --primary: #0e7c86;
+  --primary-foreground: #ffffff;
+  --secondary: #e3f3f4;
+  --secondary-foreground: #0b5a62;
+  --muted: #eef1f5;
+  --muted-foreground: #5b6577;
+  --accent: #e3f3f4;
+  --accent-foreground: #0b5a62;
+  --destructive: #b3261e;
+  --border: #e3e7ee;
+  --input: #c9d0db;
+  --ring: #0e7c86;
+  --radius: 0.75rem;
+  --sidebar: #0b1f3a;
+  --sidebar-foreground: #dce4f0;
+  --sidebar-primary: #0e7c86;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #16345c;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #16345c;
+  --sidebar-ring: #0e7c86;
+  --success: #1b7a4b;
+  --success-soft: #e5f4ec;
+  --warning: #9a4a07;
+  --warning-soft: #fdf0e1;
+  --danger-soft: #fce9e7;
+}
+@theme inline {
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger-soft: var(--danger-soft);
+  --font-display: var(--font-display);
+}
