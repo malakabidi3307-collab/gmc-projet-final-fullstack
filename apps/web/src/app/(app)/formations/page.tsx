@@ -1,5 +1,3 @@
-import { CoursesView } from "@/components/ifag/courses-view";
+import { FormationsPage } from "@/components/ifag/my-courses-view";
 
-export default function FormationsPage() {
-  return <CoursesView />;
-}
+export default function Page() { return <FormationsPage />; }

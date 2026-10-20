@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { USE_DEMO } from "@/lib/config";
 
 export function PageHeader({ title, description, actions }: { title: string; description?: string; actions?: ReactNode }) {
   return (
@@ -13,5 +14,6 @@ export function PageHeader({ title, description, actions }: { title: string; des
 }
 
 export function DemoNotice() {
+  if (!USE_DEMO) return null;
   return <p className="text-xs text-muted-foreground">Données de démonstration — non connectées à l’API.</p>;
 }

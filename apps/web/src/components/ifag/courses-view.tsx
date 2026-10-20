@@ -2,21 +2,23 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { demoCourses } from "@/data/demo";
+import { useResource } from "@/hooks/use-resource";
+import { courses } from "@/lib/services";
 import { CourseTable } from "./course-table";
 import { CreateCourseDialog } from "./create-course-dialog";
-import { DemoNotice, PageHeader } from "./page-header";
-import type { Course } from "@/types";
+import { PageHeader } from "./page-header";
+import { DataBoundary } from "./state-views";
 
 export function CoursesView() {
-  const [courses, setCourses] = useState<Course[]>(demoCourses); // TODO(API): GET /api/courses
+  const { data, loading, error, reload, create, update } = useResource(courses);
   const [open, setOpen] = useState(false);
   return (
     <>
       <PageHeader title="Formations" description="Gérez le catalogue et les programmes pédagogiques." actions={<Button onClick={() => setOpen(true)}>Nouvelle formation</Button>} />
-      <CourseTable courses={courses} onArchive={(id) => setCourses((cs) => cs.map((c) => (c.id === id ? { ...c, status: "archived" } : c)))} />
-      <div className="mt-4"><DemoNotice /></div>
-      <CreateCourseDialog open={open} onOpenChange={setOpen} onCreate={(c) => setCourses((cs) => [c, ...cs])} />
+      <DataBoundary loading={loading} error={error} onRetry={reload}>
+        <CourseTable courses={data} onArchive={(id) => update(id, { status: "archived" })} />
+      </DataBoundary>
+      <CreateCourseDialog open={open} onOpenChange={setOpen} onCreate={async (c) => { await create(c); }} />
     </>
   );
 }

@@ -10,7 +10,7 @@ import type { Course } from "@/types";
 
 type Draft = Pick<Course, "name" | "category" | "durationHours"> & { description: string };
 
-export function CreateCourseDialog({ open, onOpenChange, onCreate }: { open: boolean; onOpenChange: (o: boolean) => void; onCreate: (c: Course) => void }) {
+export function CreateCourseDialog({ open, onOpenChange, onCreate }: { open: boolean; onOpenChange: (o: boolean) => void; onCreate: (c: Omit<Course, "id">) => void | Promise<void> }) {
   const [name, setName] = useState(""); const [category, setCategory] = useState("");
   const [hours, setHours] = useState(""); const [description, setDescription] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -23,8 +23,7 @@ export function CreateCourseDialog({ open, onOpenChange, onCreate }: { open: boo
     if (!(Number(hours) > 0)) err.hours = "Indiquez une durée en heures.";
     setErrors(err);
     if (Object.keys(err).length) return;
-    // TODO(API): POST /api/courses — pour l'instant, ajout local uniquement (démo).
-    onCreate({ id: crypto.randomUUID(), name, category, trainer: null, enrolled: 0, durationHours: Number(hours), status: "draft", updatedAt: "Aujourd’hui" });
+    onCreate({ name, category, trainer: null, enrolled: 0, durationHours: Number(hours), status: "draft", updatedAt: "Aujourd’hui" });
     setName(""); setCategory(""); setHours(""); setDescription(""); onOpenChange(false);
   }
 

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Brand } from "@/components/ifag/brand";
 import { LoginForm } from "@/components/ifag/login-form";
+import { login } from "@/lib/services";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,8 +21,8 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
           <h1 className="mb-2 text-2xl font-semibold">Bienvenue sur IFAG Formation</h1>
           <p className="mb-6 text-muted-foreground">Connectez-vous avec votre compte institutionnel.</p>
-          {/* TODO(API): remplacer par POST /api/auth/login. Pour l'instant, redirection de démonstration. */}
-          <LoginForm onSubmit={async () => { router.push("/dashboard"); }} />
+          {/* Démo : aucune vérification. API : POST /api/auth/login (voir lib/services.ts). */}
+          <LoginForm onSubmit={async (v) => { await login(v); router.push("/dashboard"); }} />
         </div>
       </section>
     </main>
