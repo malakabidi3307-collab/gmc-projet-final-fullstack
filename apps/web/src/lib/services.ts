@@ -1,5 +1,4 @@
-// Point d'entrée UNIQUE des données. Les pages n'importent jamais data/demo.ts directement.
-// Pour brancher le backend : NEXT_PUBLIC_USE_DEMO=false et implémenter les routes indiquées.
+
 import * as demo from "@/data/demo";
 import { apiFetch } from "./api";
 import { USE_DEMO } from "./config";

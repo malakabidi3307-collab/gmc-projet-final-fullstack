@@ -1,5 +1,4 @@
-// DONNÉES DE DÉMONSTRATION — fictives, à remplacer par les réponses de l'API.
-// Aucune statistique officielle d'IFAG n'est représentée ici.
+
 import type { AttendanceRow, Course, CurrentUser, Enrollment, Evaluation, ScheduleEvent, SessionRow, Stat, Student, Trainer, UpcomingSession } from "@/types";
 
 export const demoUser: CurrentUser = {
