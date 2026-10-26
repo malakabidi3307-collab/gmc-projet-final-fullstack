@@ -9,12 +9,7 @@ export interface Resource<T extends { id: string }> {
   remove(id: string): Promise<void>;
 }
 
-/**
- * Contrat REST attendu du backend pour chaque ressource `path` :
- *   GET /api/<path>  ·  GET /api/<path>/:id  ·  POST /api/<path>
- *   PATCH /api/<path>/:id  ·  DELETE /api/<path>/:id
- * En mode démo, un magasin en mémoire (non persistant) reproduit ce contrat.
- */
+
 export function createResource<T extends { id: string }>(path: string, seed: T[]): Resource<T> {
   if (!USE_DEMO) {
     const json = (method: string, body?: unknown) => ({ method, body: body === undefined ? undefined : JSON.stringify(body) });

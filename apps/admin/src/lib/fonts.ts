@@ -1,0 +1,4 @@
+import { Figtree, Fraunces } from "next/font/google";
+
+export const figtree = Figtree({ subsets: ["latin"], variable: "--font-sans" });
+export const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-display" });

@@ -21,7 +21,6 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
           <h1 className="mb-2 text-2xl font-semibold">Bienvenue sur IFAG Formation</h1>
           <p className="mb-6 text-muted-foreground">Connectez-vous avec votre compte institutionnel.</p>
-          {/* Démo : aucune vérification. API : POST /api/auth/login (voir lib/services.ts). */}
           <LoginForm onSubmit={async (v) => { await login(v); router.push("/dashboard"); }} />
         </div>
       </section>
