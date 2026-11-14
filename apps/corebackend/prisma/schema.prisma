@@ -11,3 +11,181 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum Role {
+  ADMIN
+  TRAINER
+  LEARNER
+}
+
+enum AccountStatus {
+  ACTIVE
+  PENDING
+  DISABLED
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum EnrollmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+}
+
+enum GradeStatus {
+  PENDING
+  VALIDATED
+  FAILED
+}
+
+model User {
+  id               String        @id @default(cuid())
+  name             String
+  email            String        @unique
+  phone            String?
+  passwordHash     String
+  role             Role
+  status           AccountStatus @default(PENDING)
+  specialty        String?
+  tokenVersion     Int           @default(0)
+  failedLoginCount Int           @default(0)
+  lockedUntil      DateTime?
+  lastLoginAt      DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  coursesTaught  Course[]          @relation("CourseTrainer")
+  sessionsTaught TrainingSession[] @relation("SessionTrainer")
+  enrollments    Enrollment[]
+  attendances    Attendance[]
+  grades         Grade[]
+  notifications  Notification[]
+
+  @@index([role, status])
+  @@map("users")
+}
+
+model Course {
+  id            String       @id @default(cuid())
+  name          String
+  category      String
+  description   String?
+  objectives    String?
+  prerequisites String?
+  modules       String?
+  durationHours Int
+  status        CourseStatus @default(DRAFT)
+  trainerId     String?
+  trainer       User?        @relation("CourseTrainer", fields: [trainerId], references: [id], onDelete: SetNull)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  sessions    TrainingSession[]
+  enrollments Enrollment[]
+  evaluations Evaluation[]
+
+  @@index([status])
+  @@index([trainerId])
+  @@map("courses")
+}
+
+model TrainingSession {
+  id        String   @id @default(cuid())
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  trainerId String?
+  trainer   User?    @relation("SessionTrainer", fields: [trainerId], references: [id], onDelete: SetNull)
+  startsAt  DateTime
+  endsAt    DateTime
+  location  String
+  capacity  Int
+
+  attendances Attendance[]
+
+  @@index([courseId])
+  @@index([trainerId])
+  @@index([startsAt])
+  @@map("training_sessions")
+}
+
+model Enrollment {
+  id        String           @id @default(cuid())
+  studentId String
+  student   User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  courseId  String
+  course    Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  status    EnrollmentStatus @default(PENDING)
+  progress  Int              @default(0)
+  createdAt DateTime         @default(now())
+
+  @@unique([studentId, courseId])
+  @@index([courseId])
+  @@map("enrollments")
+}
+
+model Attendance {
+  sessionId String
+  session   TrainingSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  studentId String
+  student   User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  status    AttendanceStatus
+
+  @@id([sessionId, studentId])
+  @@index([studentId])
+  @@map("attendances")
+}
+
+model Evaluation {
+  id       String  @id @default(cuid())
+  title    String
+  courseId String
+  course   Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  maxScore Int     @default(20)
+  grades   Grade[]
+
+  @@index([courseId])
+  @@map("evaluations")
+}
+
+model Grade {
+  evaluationId String
+  evaluation   Evaluation  @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  score        Float?
+  status       GradeStatus @default(PENDING)
+
+  @@id([evaluationId, studentId])
+  @@index([studentId])
+  @@map("grades")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+  @@map("notifications")
+}
+
+model Setting {
+  key   String @id
+  value Json
+
+  @@map("settings")
+}
