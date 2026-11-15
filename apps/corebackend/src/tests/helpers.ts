@@ -38,6 +38,7 @@ export async function createUser(overrides: UserOverrides = {}) {
 }
 
 export async function resetDatabase(): Promise<void> {
+  await prisma.course.deleteMany();
   await prisma.user.deleteMany();
 }
 
