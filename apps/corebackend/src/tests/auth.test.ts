@@ -199,7 +199,7 @@ describe("GET /api/auth/me", () => {
 
   it("refuse un jeton expire", async () => {
     const user = await createUser({ role: "ADMIN", email: "admin@test.example" });
-    const token = await issueAccessToken(user, "admin", { ttlSeconds: -10 });
+    const token = await issueAccessToken(user, "admin", "sid-expire", { ttlSeconds: -10 });
     const res = await getMe("admin", `${ADMIN_COOKIE}=${token}`);
     expect(res.status).toBe(401);
   });

@@ -16,6 +16,7 @@ export interface AuthUser {
   email: string;
   role: RoleName;
   app: ClientApp;
+  sessionId: string;
 }
 
 /** L'origine designe l'application ; sans origine reconnue, on essaie les deux cookies. */
@@ -31,13 +32,25 @@ export async function resolveSession(req: Request): Promise<AuthUser | null> {
     if (typeof token !== "string" || token === "") continue;
     const claims = await verifyAccessToken(token, app);
     if (!claims) continue;
-    const user = await prisma.user.findUnique({
-      where: { id: claims.sub },
-      select: { id: true, name: true, email: true, role: true, status: true, tokenVersion: true },
+
+    // Le jeton n'est valide que tant que sa session l'est (deconnexion = effet immediat).
+    const session = await prisma.authSession.findUnique({
+      where: { id: claims.sid },
+      select: {
+        userId: true,
+        app: true,
+        revokedAt: true,
+        expiresAt: true,
+        user: { select: { id: true, name: true, email: true, role: true, status: true, tokenVersion: true } },
+      },
     });
-    if (!user || user.status !== "ACTIVE" || user.tokenVersion !== claims.tv) continue;
+    if (!session || session.revokedAt !== null || session.expiresAt <= new Date()) continue;
+    if (session.userId !== claims.sub || session.app !== app) continue;
+
+    const { user } = session;
+    if (user.status !== "ACTIVE" || user.tokenVersion !== claims.tv) continue;
     if (!CLIENT_ROLES[app].includes(user.role)) continue;
-    return { id: user.id, name: user.name, email: user.email, role: user.role, app };
+    return { id: user.id, name: user.name, email: user.email, role: user.role, app, sessionId: claims.sid };
   }
   return null;
 }

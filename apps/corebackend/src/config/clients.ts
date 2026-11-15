@@ -9,10 +9,15 @@ export const CLIENT_ROLES: Record<ClientApp, readonly RoleName[]> = {
   web: ["TRAINER", "LEARNER"],
 };
 
-// Un cookie par application : les cookies de localhost sont partages entre les ports.
+// Un jeu de cookies par application : les cookies de localhost sont partages entre les ports.
 export const COOKIE_NAMES: Record<ClientApp, string> = {
   admin: "ifag_admin_session",
   web: "ifag_web_session",
+};
+
+export const REFRESH_COOKIE_NAMES: Record<ClientApp, string> = {
+  admin: "ifag_admin_refresh",
+  web: "ifag_web_refresh",
 };
 
 const ORIGINS: Record<ClientApp, string> = { web: env.WEB_ORIGIN, admin: env.ADMIN_ORIGIN };

@@ -10,16 +10,18 @@ export interface AccessTokenClaims {
   role: string;
   tv: number;
   app: ClientApp;
+  sid: string;
 }
 
 export async function issueAccessToken(
   user: { id: string; role: string; tokenVersion: number },
   app: ClientApp,
+  sessionId: string,
   options: { ttlSeconds?: number } = {},
 ): Promise<string> {
-  const ttl = options.ttlSeconds ?? env.SESSION_TTL_MINUTES * 60;
+  const ttl = options.ttlSeconds ?? env.ACCESS_TTL_MINUTES * 60;
   const now = Math.floor(Date.now() / 1000);
-  return new SignJWT({ role: user.role, tv: user.tokenVersion, app })
+  return new SignJWT({ role: user.role, tv: user.tokenVersion, app, sid: sessionId })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(user.id)
     .setIssuer(ISSUER)
@@ -36,8 +38,10 @@ export async function verifyAccessToken(token: string, app: ClientApp): Promise<
       audience: app,
       algorithms: ["HS256"],
     });
-    if (typeof payload.sub !== "string" || typeof payload.tv !== "number") return null;
-    return { sub: payload.sub, role: String(payload.role), tv: payload.tv, app };
+    if (typeof payload.sub !== "string" || typeof payload.tv !== "number" || typeof payload.sid !== "string") {
+      return null;
+    }
+    return { sub: payload.sub, role: String(payload.role), tv: payload.tv, app, sid: payload.sid };
   } catch {
     return null;
   }

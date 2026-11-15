@@ -70,6 +70,7 @@ model User {
   attendances    Attendance[]
   grades         Grade[]
   notifications  Notification[]
+  authSessions   AuthSession[]
 
   @@index([role, status])
   @@map("users")
@@ -188,4 +189,23 @@ model Setting {
   value Json
 
   @@map("settings")
+}
+
+model AuthSession {
+  id                       String    @id @default(cuid())
+  userId                   String
+  user                     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  app                      String
+  refreshTokenHash         String    @unique
+  previousRefreshTokenHash String?
+  rotatedAt                DateTime?
+  expiresAt                DateTime
+  revokedAt                DateTime?
+  userAgent                String?
+  createdAt                DateTime  @default(now())
+  lastUsedAt               DateTime  @default(now())
+
+  @@index([userId])
+  @@index([previousRefreshTokenHash])
+  @@map("auth_sessions")
 }
