@@ -22,7 +22,7 @@ const courseSelect = {
 const courseNotFound = () => new AppError(404, "COURSE_NOT_FOUND", "Formation introuvable.");
 
 /** Perimetre de lecture : applique a la liste ET au detail (une formation hors perimetre est un 404). */
-function visibleTo(actor: AuthUser) {
+export function visibleTo(actor: AuthUser) {
   if (actor.role === "ADMIN") {
     return {};
   }
@@ -59,7 +59,7 @@ function orderByFor(query: ListCoursesQuery) {
   }
 }
 
-async function assertAssignableTrainer(trainerId: string): Promise<void> {
+export async function assertAssignableTrainer(trainerId: string): Promise<void> {
   const trainer = await prisma.user.findUnique({ where: { id: trainerId }, select: { role: true, status: true } });
   if (!trainer || trainer.role !== "TRAINER" || trainer.status !== "ACTIVE") {
     throw new AppError(
