@@ -6,12 +6,13 @@ import { loginViaBff } from "./auth-client";
 import { USE_DEMO } from "./config";
 import { createResource } from "./resource";
 import { coursesBinding } from "./adapters/courses";
+import { sessionsBinding } from "./adapters/sessions";
 import type { AttendanceRow, CurrentUser, DashboardData, Role } from "@/types";
 
 export const courses = createResource("courses", [], coursesBinding);
 export const students = createResource("students", demo.demoStudents);
 export const trainers = createResource("trainers", demo.demoTrainers);
-export const sessions = createResource("sessions", demo.demoSessionRows);
+export const sessions = createResource("sessions", [], sessionsBinding);
 export const enrollments = createResource("enrollments", demo.demoEnrollments);
 export const evaluations = createResource("evaluations", demo.demoEvaluations);
 export const schedule = createResource("schedule", demo.demoSchedule);

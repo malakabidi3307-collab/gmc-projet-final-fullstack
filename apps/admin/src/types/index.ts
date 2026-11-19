@@ -50,7 +50,8 @@ export interface Trainer {
 export type SessionStatus = "open" | "full" | "no-trainer" | "ended";
 export interface SessionRow {
   id: string; course: string; trainer: string | null; start: string; end: string;
-  time: string; location: string; enrolled: number; capacity: number; status: SessionStatus;
+  time: string; location: string; enrolled?: number; capacity: number; status: SessionStatus;
+  courseId?: string; trainerId?: string | null; startsAtIso?: string; endsAtIso?: string;
 }
 
 export interface ScheduleEvent {
