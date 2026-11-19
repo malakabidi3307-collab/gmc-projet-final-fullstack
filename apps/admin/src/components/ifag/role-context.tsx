@@ -1,29 +1,17 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { USE_DEMO } from "@/lib/config";
-import { getCurrentUser } from "@/lib/services";
-import { LoadingSkeleton, Unauthorized } from "./state-views";
+import { createContext, useContext, type ReactNode } from "react";
+import { Unauthorized } from "./state-views";
 import type { CurrentUser, Role } from "@/types";
 
 /**
  * Contexte utilisateur de l'application ADMIN.
- * - Mode démo : administrateur fictif, AUCUNE authentification.
- * - Mode API : l'utilisateur vient de GET /api/auth/me ; sans session ou sans rôle admin, rien n'est affiché.
- * ATTENTION : ceci ne protège que l'interface. Les autorisations doivent être appliquées par le backend.
+ * L'utilisateur est fourni par le layout serveur apres verification de la session.
+ * ATTENTION : ceci ne gere que l'affichage. Les autorisations sont appliquees par le backend.
  */
-const DEMO_ADMIN: CurrentUser = { name: "Administrateur (démo)", email: "admin@demo.example", role: "admin" };
 const Ctx = createContext<{ user: CurrentUser } | null>(null);
 
-export function RoleProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<CurrentUser | null>(USE_DEMO ? DEMO_ADMIN : null);
-  const [loading, setLoading] = useState(!USE_DEMO);
-  useEffect(() => {
-    if (USE_DEMO) return;
-    getCurrentUser().then(setUser).catch(() => setUser(null)).finally(() => setLoading(false));
-  }, []);
-  if (loading) return <div className="p-6"><LoadingSkeleton /></div>;
-  if (!user || user.role !== "admin") return <div className="p-6"><Unauthorized /></div>;
+export function RoleProvider({ user, children }: { user: CurrentUser; children: ReactNode }) {
   return <Ctx.Provider value={{ user }}>{children}</Ctx.Provider>;
 }
 

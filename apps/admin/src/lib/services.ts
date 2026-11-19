@@ -1,6 +1,7 @@
 
 import * as demo from "@/data/demo";
 import { apiFetch } from "./api";
+import { loginViaBff } from "./auth-client";
 import { USE_DEMO } from "./config";
 import { createResource } from "./resource";
 import type { AttendanceRow, CurrentUser, DashboardData, Role } from "@/types";
@@ -28,7 +29,7 @@ export async function updateProfile(patch: { name: string; email: string; phone:
 }
 // POST /api/auth/login
 export async function login(creds: { email: string; password: string }): Promise<void> {
-  if (!USE_DEMO) await apiFetch("/api/auth/login", { method: "POST", body: JSON.stringify(creds) });
+  await loginViaBff(creds);
 }
 // GET /api/dashboard?role=
 export async function getDashboard(role: Role): Promise<DashboardData> {
