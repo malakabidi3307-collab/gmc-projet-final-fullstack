@@ -5,7 +5,10 @@ interface ApiErrorBody {
 function messageFor(status: number, body: ApiErrorBody | null): string {
   if (status === 400) return "Veuillez renseigner un e-mail et un mot de passe valides.";
   if (status === 401) return "E-mail ou mot de passe incorrect.";
-  if (status === 403) return "Ce compte n'a pas accès à l'administration.";
+  if (status === 403) {
+    if (body?.error?.code === "ORIGIN_NOT_ALLOWED" || body?.error?.code === "BFF_ORIGIN_NOT_ALLOWED") return "Origine non autorisée : ouvrez l'application via l'adresse configurée (voir ADMIN_ORIGIN).";
+    return "Ce compte n'a pas accès à l'administration.";
+  }
   if (status === 429) return "Trop de tentatives. Réessayez dans quelques instants.";
   if (status === 502) return "Le serveur est indisponible. Réessayez plus tard.";
   return body?.error?.message ?? "Connexion impossible. Réessayez.";

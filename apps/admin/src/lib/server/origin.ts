@@ -8,7 +8,7 @@ export function isTrustedOrigin(request: NextRequest): boolean {
 
 export function forbiddenOrigin(): NextResponse {
   return NextResponse.json(
-    { error: { code: "ORIGIN_NOT_ALLOWED", message: "Origine de la requête non autorisée." } },
+    { error: { code: "BFF_ORIGIN_NOT_ALLOWED", message: "Origine de la requête non autorisée." } },
     { status: 403 },
   );
 }

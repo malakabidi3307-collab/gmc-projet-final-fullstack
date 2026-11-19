@@ -16,7 +16,7 @@ export function DashboardView() {
   const d = dash.data;
   return (
     <div className="grid gap-4">
-      <PageHeader title="Bonjour, bienvenue sur votre tableau de bord" description="Période de référence : septembre 2026" />
+      <PageHeader title="Bonjour, bienvenue sur votre tableau de bord" description={d?.period ? `Inscriptions sur la période : ${d.period}` : undefined} />
       <DataBoundary loading={dash.loading} error={dash.error} onRetry={dash.reload}>
         {d && (
           <>
@@ -26,6 +26,7 @@ export function DashboardView() {
               <Card>
                 <CardHeader><CardTitle>À traiter</CardTitle></CardHeader>
                 <CardContent className="grid gap-3 text-sm">
+                  {d.alerts.length === 0 && <p className="text-muted-foreground">Rien à traiter pour le moment.</p>}
                   {d.alerts.map((a) => <p key={a.id}><Badge variant="secondary" className={`mr-2 border-0 ${ALERT[a.tone][1]}`}>{ALERT[a.tone][0]}</Badge>{a.text}</p>)}
                 </CardContent>
               </Card>

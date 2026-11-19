@@ -33,13 +33,25 @@ function monthLabel(key: string): string {
 
 const plural = (n: number, one: string, many: string) => `${number.format(n)} ${n > 1 ? many : one}`;
 
+const longMonth = new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric", timeZone: "UTC" });
+
+function periodLabel(keys: string[]): string | undefined {
+  if (keys.length === 0) return undefined;
+  const toDate = (key: string) => {
+    const [year, month] = key.split("-").map(Number);
+    return new Date(Date.UTC(year, month - 1, 1));
+  };
+  const first = longMonth.format(toDate(keys[0]));
+  const last = longMonth.format(toDate(keys[keys.length - 1]));
+  return first === last ? first : `${first} à ${last}`;
+}
 export function toDashboardData(dto: DashboardDto): DashboardData {
   const { totals } = dto;
   const stats: Stat[] = [
     { label: "Apprenants", value: number.format(totals.learners) },
     { label: "Formateurs", value: number.format(totals.trainers) },
     { label: "Formations", value: number.format(totals.courses) },
-    { label: "Sessions", value: number.format(totals.sessions) },
+    { label: "Sessions (total)", value: number.format(totals.sessions) },
     { label: "Inscriptions", value: number.format(totals.enrollments) },
   ];
 
@@ -82,6 +94,7 @@ export function toDashboardData(dto: DashboardDto): DashboardData {
     sessions,
     alerts,
     months: dto.enrollmentsByMonth.map((m) => monthLabel(m.month)),
+    period: periodLabel(dto.enrollmentsByMonth.map((m) => m.month)),
     enrollments: dto.enrollmentsByMonth.map((m) => m.count),
   };
 }

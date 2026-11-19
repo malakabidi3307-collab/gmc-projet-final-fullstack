@@ -65,5 +65,5 @@ export interface LearnerCourse { id: string; name: string; trainer: string; prog
 export interface AttendanceRate { id: string; course: string; enrolled: number; rate: number }
 export interface DashboardAlert { id: string; tone: "warning" | "danger" | "info"; text: string }
 export interface DashboardData {
-  stats: Stat[]; sessions: UpcomingSession[]; alerts: DashboardAlert[]; months: string[]; enrollments: number[];
+  stats: Stat[]; sessions: UpcomingSession[]; alerts: DashboardAlert[]; months: string[]; enrollments: number[]; period?: string;
 }
