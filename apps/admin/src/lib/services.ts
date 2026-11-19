@@ -1,14 +1,18 @@
 
 import * as demo from "@/data/demo";
+import { toDashboardData, type DashboardDto } from "./dashboard-adapter";
 import { apiFetch } from "./api";
+import { loginViaBff } from "./auth-client";
 import { USE_DEMO } from "./config";
 import { createResource } from "./resource";
+import { coursesBinding } from "./adapters/courses";
+import { sessionsBinding } from "./adapters/sessions";
 import type { AttendanceRow, CurrentUser, DashboardData, Role } from "@/types";
 
-export const courses = createResource("courses", demo.demoCourses);
+export const courses = createResource("courses", [], coursesBinding);
 export const students = createResource("students", demo.demoStudents);
 export const trainers = createResource("trainers", demo.demoTrainers);
-export const sessions = createResource("sessions", demo.demoSessionRows);
+export const sessions = createResource("sessions", [], sessionsBinding);
 export const enrollments = createResource("enrollments", demo.demoEnrollments);
 export const evaluations = createResource("evaluations", demo.demoEvaluations);
 export const schedule = createResource("schedule", demo.demoSchedule);
@@ -28,16 +32,12 @@ export async function updateProfile(patch: { name: string; email: string; phone:
 }
 // POST /api/auth/login
 export async function login(creds: { email: string; password: string }): Promise<void> {
-  if (!USE_DEMO) await apiFetch("/api/auth/login", { method: "POST", body: JSON.stringify(creds) });
+  await loginViaBff(creds);
 }
-// GET /api/dashboard?role=
+// GET /api/admin/dashboard (via le proxy Next.js) : aucune donnee de demonstration.
 export async function getDashboard(role: Role): Promise<DashboardData> {
-  if (!USE_DEMO) return apiFetch<DashboardData>(`/api/dashboard?role=${role}`);
-  const sessionsForRole = role === "trainer" ? demo.demoSessions.filter((s) => s.trainer === "S. Benali") : demo.demoSessions;
-  const stats = role === "admin" ? demo.demoStats : role === "trainer"
-    ? [{ label: "Sessions cette semaine", value: "4" }, { label: "Apprenants suivis", value: "62" }, { label: "Présences à saisir", value: "2" }]
-    : [{ label: "Formations en cours", value: "2" }, { label: "Taux de présence", value: "94 %" }, { label: "Moyenne générale", value: "14,2 / 20" }];
-  return { stats, sessions: sessionsForRole, alerts: [...demo.demoAlerts], months: demo.demoEnrollmentMonths, enrollments: demo.demoEnrollments_series };
+  if (role !== "admin") throw new Error("Tableau de bord réservé à l'administration.");
+  return toDashboardData(await apiFetch<DashboardDto>("/admin/dashboard"));
 }
 
 const attendanceStore = new Map<string, AttendanceRow[]>();

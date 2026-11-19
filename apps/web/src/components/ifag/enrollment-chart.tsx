@@ -1,4 +1,4 @@
-// Courbe SVG simple (aucune dépendance). Pour un graphique avancé : `pnpm dlx shadcn@latest add chart`.
+
 export function EnrollmentChart({ values, labels }: { values: number[]; labels: string[] }) {
   const max = Math.max(...values), w = 520, h = 160, pad = 20;
   const pts = values.map((v, i) => [pad + (i * (w - 2 * pad)) / (values.length - 1), h - pad - (v / max) * (h - 2 * pad)]);

@@ -6,16 +6,16 @@ import { getCurrentUser } from "@/lib/services";
 import { Unauthorized } from "./state-views";
 import type { CurrentUser, Role } from "@/types";
 
-const DEMO_USERS: Record<Role, CurrentUser> = {
-  admin: { name: "Administrateur (démo)", email: "admin@demo.example", role: "admin" },
+export type WebRole = Exclude<Role, "admin">;
+const DEMO_USERS: Record<WebRole, CurrentUser> = {
   trainer: { name: "S. Benali", email: "s.benali@demo.example", role: "trainer" },
   learner: { name: "Amina Meziane", email: "amina.m@demo.example", role: "learner" },
 };
-interface Ctx { user: CurrentUser; setRole: (r: Role) => void; loading: boolean }
+interface Ctx { user: CurrentUser; setRole: (r: WebRole) => void; loading: boolean }
 const RoleCtx = createContext<Ctx | null>(null);
 
 export function RoleProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<CurrentUser>(DEMO_USERS.admin);
+  const [user, setUser] = useState<CurrentUser>(DEMO_USERS.trainer);
   const [loading, setLoading] = useState(!USE_DEMO);
   useEffect(() => {
     if (USE_DEMO) return;

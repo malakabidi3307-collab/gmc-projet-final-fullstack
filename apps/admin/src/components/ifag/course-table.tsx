@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { MoreHorizontal } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ const PAGE_SIZE = 5;
 const STATUS_LABELS: Record<string, string> = { all: "Tous les statuts", published: "Publiée", draft: "Brouillon", archived: "Archivée" };
 
 export function CourseTable({ courses, onArchive }: { courses: Course[]; onArchive: (id: string) => void }) {
+  const router = useRouter();
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<string>("all");
   const [page, setPage] = useState(0);
@@ -59,8 +61,8 @@ export function CourseTable({ courses, onArchive }: { courses: Course[]; onArchi
                   <DropdownMenu>
                     <DropdownMenuTrigger render={<Button variant="ghost" size="icon" aria-label={`Actions pour ${c.name}`} />}><MoreHorizontal /></DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>Consulter</DropdownMenuItem>
-                      <DropdownMenuItem>Modifier</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => router.push(`/formations/${c.id}`)}>Consulter</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => router.push(`/formations/${c.id}/modifier`)}>Modifier</DropdownMenuItem>
                       <DropdownMenuItem variant="destructive" onClick={() => onArchive(c.id)}>Archiver</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

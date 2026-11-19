@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-// Confirmation avant toute action destructive ou sensible.
+
 export function ConfirmDialog({ open, onOpenChange, title, description, confirmLabel, onConfirm }: {
   open: boolean; onOpenChange: (o: boolean) => void; title: string; description: string; confirmLabel: string; onConfirm: () => void;
 }) {

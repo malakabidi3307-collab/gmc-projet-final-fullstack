@@ -3,7 +3,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useResource } from "@/hooks/use-resource";
 import { courses, learnerCourses } from "@/lib/services";
-import { CoursesView } from "./courses-view";
 import { PageHeader } from "./page-header";
 import { useCurrentUser } from "./role-context";
 import { DataBoundary, EmptyState } from "./state-views";
@@ -15,8 +14,7 @@ function Bar({ value, label }: { value: number; label: string }) {
 
 // /formations : catalogue complet pour l'admin, « Mes formations » pour formateur et apprenant.
 export function FormationsPage() {
-  const { user } = useCurrentUser();
-  return user.role === "admin" ? <CoursesView /> : <MyCoursesView />;
+  return <MyCoursesView />;
 }
 
 export function MyCoursesView() {

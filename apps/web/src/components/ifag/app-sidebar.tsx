@@ -13,7 +13,7 @@ export function AppSidebar({ role }: { role: Role }) {
     <Sidebar>
       <SidebarHeader className="px-4 py-5"><Brand className="text-sidebar-foreground" /></SidebarHeader>
       <SidebarContent>
-        {NAV[role].map((group, i) => (
+        {(NAV[role] ?? []).map((group, i) => (
           <SidebarGroup key={group.label ?? i}>
             {group.label && <SidebarGroupLabel>{group.label}</SidebarGroupLabel>}
             <SidebarGroupContent>

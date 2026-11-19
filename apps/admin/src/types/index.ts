@@ -10,6 +10,11 @@ export interface Course {
   durationHours: number;
   status: CourseStatus;
   updatedAt: string;
+  description?: string;
+  objectives?: string;
+  prerequisites?: string;
+  modules?: string;
+  trainerId?: string | null;
 }
 
 export interface Stat {
@@ -45,7 +50,8 @@ export interface Trainer {
 export type SessionStatus = "open" | "full" | "no-trainer" | "ended";
 export interface SessionRow {
   id: string; course: string; trainer: string | null; start: string; end: string;
-  time: string; location: string; enrolled: number; capacity: number; status: SessionStatus;
+  time: string; location: string; enrolled?: number; capacity: number; status: SessionStatus;
+  courseId?: string; trainerId?: string | null; startsAtIso?: string; endsAtIso?: string;
 }
 
 export interface ScheduleEvent {
@@ -65,5 +71,5 @@ export interface LearnerCourse { id: string; name: string; trainer: string; prog
 export interface AttendanceRate { id: string; course: string; enrolled: number; rate: number }
 export interface DashboardAlert { id: string; tone: "warning" | "danger" | "info"; text: string }
 export interface DashboardData {
-  stats: Stat[]; sessions: UpcomingSession[]; alerts: DashboardAlert[]; months: string[]; enrollments: number[];
+  stats: Stat[]; sessions: UpcomingSession[]; alerts: DashboardAlert[]; months: string[]; enrollments: number[]; period?: string;
 }

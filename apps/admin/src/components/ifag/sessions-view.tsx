@@ -1,19 +1,22 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { sessions } from "@/lib/services";
-import { useCurrentUser } from "./role-context";
-import { DataBoundary } from "./state-views";
 import { useResource } from "@/hooks/use-resource";
-
-import { DemoNotice, PageHeader } from "./page-header";
+import { sessions } from "@/lib/services";
+import { ConfirmDialog } from "./confirm-dialog";
+import { PageHeader } from "./page-header";
+import { useCurrentUser } from "./role-context";
+import { SessionDialog } from "./session-dialog";
+import { DataBoundary } from "./state-views";
 import { PAGE_SIZE, TablePager } from "./table-pager";
 import { ToneBadge, type Tone } from "./tone-badge";
-import type { SessionStatus } from "@/types";
+import type { SessionRow, SessionStatus } from "@/types";
 
 const STATUS: Record<SessionStatus, { label: string; tone: Tone }> = {
   open: { label: "Ouverte", tone: "success" },
@@ -22,17 +25,40 @@ const STATUS: Record<SessionStatus, { label: string; tone: Tone }> = {
   ended: { label: "Terminée", tone: "neutral" },
 };
 
+type DialogState = { mode: "create" } | { mode: "edit"; session: SessionRow } | null;
+
+const messageOf = (e: unknown) => (e instanceof Error ? e.message : "Erreur inattendue");
+const days = (s: SessionRow) => (s.start === s.end ? s.start : `${s.start} → ${s.end}`);
+const places = (s: SessionRow) => (s.enrolled === undefined ? `${s.capacity} places` : `${s.enrolled} / ${s.capacity}`);
+
 export function SessionsView() {
   const [q, setQ] = useState(""); const [page, setPage] = useState(0);
   const { user } = useCurrentUser();
-  const { data, loading, error, reload } = useResource(sessions);
+  const { data, loading, error, reload, create, update, remove } = useResource(sessions);
+  const [dialog, setDialog] = useState<DialogState>(null);
+  const [target, setTarget] = useState<SessionRow | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const mine = user.role === "trainer" ? data.filter((s) => s.trainer === user.name) : data;
   const filtered = useMemo(() => mine.filter((s) => s.course.toLowerCase().includes(q.toLowerCase())), [mine, q]);
   const rows = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
+  async function save(value: Omit<SessionRow, "id">) {
+    if (dialog?.mode === "edit") {
+      await update(dialog.session.id, {
+        startsAtIso: value.startsAtIso, endsAtIso: value.endsAtIso,
+        location: value.location, capacity: value.capacity, trainerId: value.trainerId,
+      });
+    } else {
+      await create(value);
+    }
+    setActionError(null);
+    reload();
+  }
+
   return (
     <>
-      <PageHeader title="Sessions" description="Organisez les sessions de formation." actions={user.role === "admin" ? <Button>Nouvelle session</Button> : undefined} />
+      <PageHeader title="Sessions" description="Organisez les sessions de formation." actions={user.role === "admin" ? <Button onClick={() => setDialog({ mode: "create" })}>Nouvelle session</Button> : undefined} />
+      {actionError && <p role="alert" className="mb-4 rounded-lg bg-danger-soft p-3 text-sm text-destructive">{actionError}</p>}
       <DataBoundary loading={loading} error={error} onRetry={reload}>
       <Tabs defaultValue="list" className="gap-4">
         <div className="flex flex-wrap items-center gap-3">
@@ -48,19 +74,31 @@ export function SessionsView() {
               <TableHeader><TableRow>
                 <TableHead>Formation</TableHead><TableHead>Formateur</TableHead><TableHead>Dates</TableHead><TableHead>Horaires</TableHead>
                 <TableHead>Lieu</TableHead><TableHead>Places</TableHead><TableHead>Statut</TableHead>
+                <TableHead className="w-12"><span className="sr-only">Actions</span></TableHead>
               </TableRow></TableHeader>
               <TableBody>
                 {rows.length === 0 ? (
-                  <TableRow><TableCell colSpan={7} className="py-10 text-center text-muted-foreground">Aucune session ne correspond à votre recherche.</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={8} className="py-10 text-center text-muted-foreground">Aucune session ne correspond à votre recherche.</TableCell></TableRow>
                 ) : rows.map((s) => (
                   <TableRow key={s.id}>
                     <TableCell className="font-medium">{s.course}</TableCell>
                     <TableCell>{s.trainer ?? <span className="text-muted-foreground">Non assigné</span>}</TableCell>
-                    <TableCell>{s.start} → {s.end}</TableCell>
+                    <TableCell>{days(s)}</TableCell>
                     <TableCell>{s.time}</TableCell>
                     <TableCell>{s.location}</TableCell>
-                    <TableCell>{s.enrolled} / {s.capacity}</TableCell>
+                    <TableCell>{places(s)}</TableCell>
                     <TableCell><ToneBadge tone={STATUS[s.status].tone}>{STATUS[s.status].label}</ToneBadge></TableCell>
+                    <TableCell>
+                      {user.role === "admin" && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger render={<Button variant="ghost" size="icon" aria-label={`Actions pour la session ${s.course}`} />}><MoreHorizontal /></DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => setDialog({ mode: "edit", session: s })}>Modifier</DropdownMenuItem>
+                            <DropdownMenuItem variant="destructive" onClick={() => setTarget(s)}>Supprimer</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -71,7 +109,7 @@ export function SessionsView() {
         <TabsContent value="calendar">
           {/* Vue calendrier simplifiée (liste chronologique). Une grille mensuelle viendra avec la page Emploi du temps. */}
           <ol className="grid gap-3">
-            {[...filtered].sort((a, b) => a.start.split("/").reverse().join().localeCompare(b.start.split("/").reverse().join())).map((s) => (
+            {[...filtered].sort((a, b) => (a.startsAtIso ?? "").localeCompare(b.startsAtIso ?? "")).map((s) => (
               <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border bg-card p-4 text-sm">
                 <div><p className="font-medium">{s.course}</p><p className="text-muted-foreground">{s.start} · {s.time} · {s.location}</p></div>
                 <ToneBadge tone={STATUS[s.status].tone}>{STATUS[s.status].label}</ToneBadge>
@@ -81,7 +119,17 @@ export function SessionsView() {
         </TabsContent>
       </Tabs>
       </DataBoundary>
-      <div className="mt-4"><DemoNotice /></div>
+      {dialog && (
+        <SessionDialog
+          key={dialog.mode === "edit" ? dialog.session.id : "new"}
+          session={dialog.mode === "edit" ? dialog.session : null}
+          onClose={() => setDialog(null)}
+          onSubmit={save}
+        />
+      )}
+      <ConfirmDialog open={!!target} onOpenChange={(o) => !o && setTarget(null)} confirmLabel="Supprimer la session"
+        title="Supprimer cette session ?" description={`La session « ${target?.course ?? ""} » du ${target?.start ?? ""} sera supprimée définitivement. Impossible si des présences y sont enregistrées.`}
+        onConfirm={() => { if (target) void remove(target.id).then(() => setActionError(null), (e) => setActionError(messageOf(e))); }} />
     </>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -17,19 +17,27 @@ const OPTIONS: { value: AttendanceStatus; label: string }[] = [
   { value: "present", label: "Présent" }, { value: "late", label: "En retard" }, { value: "absent", label: "Absent" },
 ];
 
+interface Rows { sid: string; rows: AttendanceRow[] }
+
 export function AttendanceView() {
   const { user } = useCurrentUser();
   const list = useResource(sessions);
   const mine = (user.role === "trainer" ? list.data.filter((s) => s.trainer === user.name) : list.data).filter((s) => s.status !== "ended");
-  const [sid, setSid] = useState<string>("");
-  useEffect(() => { if (!sid && mine[0]) setSid(mine[0].id); }, [mine, sid]);
+
+  // Session choisie, sinon la premiere disponible (valeur derivee, pas d'effet).
+  const [chosen, setChosen] = useState("");
+  const sid = mine.some((s) => s.id === chosen) ? chosen : (mine[0]?.id ?? "");
+
   const att = useAsync(() => (sid ? getAttendance(sid) : Promise.resolve([] as AttendanceRow[])), [sid]);
-  const [saved, setSaved] = useState<AttendanceRow[]>([]);
-  const [draft, setDraft] = useState<AttendanceRow[]>([]);
+  const [savedRows, setSavedRows] = useState<Rows | null>(null);
+  const [editRows, setEditRows] = useState<Rows | null>(null);
+  const [doneSid, setDoneSid] = useState<string | null>(null);
   const [confirm, setConfirm] = useState(false);
-  const [done, setDone] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  useEffect(() => { if (att.data) { setSaved(att.data); setDraft(att.data); setDone(false); } }, [att.data]);
+
+  const saved = savedRows?.sid === sid ? savedRows.rows : (att.data ?? []);
+  const draft = editRows?.sid === sid ? editRows.rows : saved;
+  const done = doneSid === sid;
 
   const changes = draft.filter((d, i) => d.status !== saved[i]?.status).length;
   const present = draft.filter((d) => d.status !== "absent").length;
@@ -37,14 +45,20 @@ export function AttendanceView() {
   const current = mine.find((s) => s.id === sid);
 
   async function validate() {
-    try { await saveAttendance(sid, draft); setSaved(draft); setDone(true); setErr(null); } catch (e) { setErr(e instanceof Error ? e.message : "Échec de l’enregistrement"); }
+    try {
+      await saveAttendance(sid, draft);
+      setSavedRows({ sid, rows: draft });
+      setEditRows(null);
+      setDoneSid(sid);
+      setErr(null);
+    } catch (e) { setErr(e instanceof Error ? e.message : "Échec de l’enregistrement"); }
   }
 
   return (
     <>
       <PageHeader title="Présences" description="Sélectionnez une session puis enregistrez les présences."
         actions={
-          <Select value={sid} onValueChange={(v) => setSid(v ?? "")}>
+          <Select value={sid} onValueChange={(v) => setChosen(v ?? "")}>
             <SelectTrigger aria-label="Session" className="h-10 w-72"><SelectValue>{current ? `${current.course} · ${current.start}` : "Choisir une session"}</SelectValue></SelectTrigger>
             <SelectContent>{mine.map((s) => <SelectItem key={s.id} value={s.id}>{s.course} · {s.start}</SelectItem>)}</SelectContent>
           </Select>
@@ -60,7 +74,7 @@ export function AttendanceView() {
                   <div role="group" aria-label={`Présence de ${row.name}`} className="flex gap-2">
                     {OPTIONS.map((o) => (
                       <Button key={o.value} size="sm" variant={row.status === o.value ? "default" : "outline"} aria-pressed={row.status === o.value}
-                        onClick={() => { setDraft((d) => d.map((r, j) => (j === i ? { ...r, status: o.value } : r))); setDone(false); }}>{o.label}</Button>
+                        onClick={() => { setEditRows({ sid, rows: draft.map((r, j) => (j === i ? { ...r, status: o.value } : r)) }); setDoneSid(null); }}>{o.label}</Button>
                     ))}
                   </div>
                 </div>
@@ -69,7 +83,7 @@ export function AttendanceView() {
                 {err && <p role="alert" className="mr-auto text-sm text-destructive">{err}</p>}
                 {done && <p role="status" className="mr-auto text-sm text-success">Présences enregistrées.</p>}
                 {changes > 0 && <span className="mr-auto text-sm text-warning">{changes} modification(s) non validée(s)</span>}
-                <Button variant="outline" disabled={changes === 0} onClick={() => setDraft(saved)}>Annuler les modifications</Button>
+                <Button variant="outline" disabled={changes === 0} onClick={() => setEditRows(null)}>Annuler les modifications</Button>
                 <Button disabled={changes === 0} onClick={() => setConfirm(true)}>Valider les présences</Button>
               </div>
             </CardContent>

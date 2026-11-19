@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-export const initials = (name: string) => name.split(/[\s.]+/).filter(Boolean).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+export const initials = (name: string) => name.split(/[\s.]+/).filter(Boolean).map((p) => p.match(/\p{L}/u)?.[0] ?? "").slice(0, 2).join("").toUpperCase();
 
 export function PersonCell({ name, subtitle }: { name: string; subtitle?: string }) {
   return (
