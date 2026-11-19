@@ -1,5 +1,5 @@
-﻿import LoginTemplate from "../components/templates/LoginTemplate";
+﻿import { redirect } from "next/navigation";
 
-export default function Home() {
-  return <LoginTemplate />;
+export default function HomePage() {
+  redirect("/dashboard");
 }

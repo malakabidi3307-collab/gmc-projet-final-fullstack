@@ -3,14 +3,12 @@
 import { useState, type FormEvent } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export function LoginForm({ onSubmit }: { onSubmit: (v: { email: string; password: string; remember: boolean }) => Promise<void> }) {
+export function LoginForm({ onSubmit }: { onSubmit: (v: { email: string; password: string }) => Promise<void> }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(false);
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>({});
@@ -23,8 +21,8 @@ export function LoginForm({ onSubmit }: { onSubmit: (v: { email: string; passwor
     setErrors(next);
     if (Object.keys(next).length) return;
     setLoading(true);
-    try { await onSubmit({ email, password, remember }); }
-    catch { setErrors({ form: "Connexion impossible. Vérifiez vos identifiants puis réessayez." }); }
+    try { await onSubmit({ email, password }); }
+    catch (e) { setErrors({ form: e instanceof Error ? e.message : "Connexion impossible." }); }
     finally { setLoading(false); }
   }
 
@@ -45,10 +43,6 @@ export function LoginForm({ onSubmit }: { onSubmit: (v: { email: string; passwor
           </Button>
         </div>
         {errors.password && <p id="pw-err" className="text-sm text-destructive">{errors.password}</p>}
-      </div>
-      <div className="flex items-center justify-between text-sm">
-        <Label htmlFor="remember" className="font-normal"><Checkbox id="remember" checked={remember} onCheckedChange={(c) => setRemember(c === true)} />Se souvenir de moi</Label>
-        <a href="#" className="font-semibold text-secondary-foreground underline-offset-4 hover:underline">Mot de passe oublié ?</a>
       </div>
       <Button type="submit" size="lg" className="h-11" disabled={loading}>
         {loading && <Loader2 className="animate-spin" />}{loading ? "Connexion…" : "Se connecter"}
