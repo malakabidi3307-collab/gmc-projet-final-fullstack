@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { requireTrustedOrigin } from "../middlewares/trusted-origin.js";
+import adminRoutes from "./admin.routes.js";
 import authRoutes from "./auth.routes.js";
 import coursesRoutes from "./courses.routes.js";
 import enrollmentsRoutes from "./enrollments.routes.js";
@@ -16,5 +17,6 @@ router.use("/users", usersRoutes);
 router.use("/courses", coursesRoutes);
 router.use("/training-sessions", sessionsRoutes);
 router.use("/enrollments", enrollmentsRoutes);
+router.use("/admin", adminRoutes);
 
 export default router;
