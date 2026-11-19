@@ -10,6 +10,11 @@ export interface Course {
   durationHours: number;
   status: CourseStatus;
   updatedAt: string;
+  description?: string;
+  objectives?: string;
+  prerequisites?: string;
+  modules?: string;
+  trainerId?: string | null;
 }
 
 export interface Stat {

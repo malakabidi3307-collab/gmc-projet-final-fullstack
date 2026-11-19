@@ -5,9 +5,10 @@ import { apiFetch } from "./api";
 import { loginViaBff } from "./auth-client";
 import { USE_DEMO } from "./config";
 import { createResource } from "./resource";
+import { coursesBinding } from "./adapters/courses";
 import type { AttendanceRow, CurrentUser, DashboardData, Role } from "@/types";
 
-export const courses = createResource("courses", demo.demoCourses);
+export const courses = createResource("courses", [], coursesBinding);
 export const students = createResource("students", demo.demoStudents);
 export const trainers = createResource("trainers", demo.demoTrainers);
 export const sessions = createResource("sessions", demo.demoSessionRows);
